@@ -1,0 +1,22 @@
+{
+  "Wind": "الرياح",
+  "Humidity": "الرطوبة",
+  "Feels Like": "الشعور الحقيقي",
+  "km/hr": "كم/س",
+  
+  "clear sky": "سماء صافية",
+  "few clouds": "مغيم جزئيا",
+  "scattered clouds": "غيوم متفرقة",
+  "broken clouds": "غيوم متداخلة",
+  "shower rain": "مطر خفيف",
+  "rain": "مطر",
+  "thunderstorm": "رعود",
+  "snow": "ثلوج",
+  "mist": "ضباب خفيف",
+
+  "Yemen": "الجمهورية اليمنية",
+  "Sanaa": "صنعاء",
+
+  "Unknown": "غير معروف",
+  "There is Error, check your internet and try again.": "حصل خطاء, تحقق من الشبكة وحاول مجددًا."
+}
