@@ -1,47 +1,15 @@
-import  { useEffect, useState } from 'react';
 import { Skeleton } from "./components/ui/skeleton"
-import { Cloud, Sun, Wind, Droplets, MapPin, Calendar, Globe } from 'lucide-react';
-import axios from 'axios';
+import {Sun, Wind, Droplets, MapPin, Calendar, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useGetWeatherDataQuery } from './store/api/weather'
 
 
 const WeatherCard = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [weatherData, setWeatherData] = useState(null);
   const { t, i18n } = useTranslation();
 
-  useEffect(() => {
-    let ignore = false;
-    const fetchWeather = async () => {
-      try {
-        const apiUrl = `https://api.openweathermap.org/data/2.5/weather`;    
-        setIsLoading(true);
-        const response = await axios.get(apiUrl, {
-          params: {
-            lat: import.meta.env.VITE_OPEN_WEATHER_LATITUDE,
-            lon: import.meta.env.VITE_OPEN_WEATHER_LONGITUDE,
-            appid: import.meta.env.VITE_OPEN_WEATHER_API_KEY,
-            units: 'metric', 
-          }
-        });
-        if (!ignore) {
-          setWeatherData({
-            city: response.data.name,
-            country: response.data.sys.country,
-            condition: response.data.weather[0].description,
-            icon: response.data.weather[0].icon,
-            humidity: response.data.main.humidity,
-            wind: Math.round(response.data.wind.speed),
-            feelsLike: Math.round(response.data.main.feels_like),
-            temp: Math.round(response.data.main.temp),
-          });
-          
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error fetching weather:', error);
-        if (!ignore) {
-          setWeatherData({
+  const { data, error, isLoading } = useGetWeatherDataQuery();
+  console.log(data);
+  const weatherData = error ? {
             city: "Unknown",
             country: "Unknown",
             condition: "There is Error, check your internet and try again.",
@@ -50,44 +18,17 @@ const WeatherCard = () => {
             wind: 0,
             feelsLike: 0,
             temp: 0,
-          });
-          setIsLoading(false);
-        }
-      }
-    };
+          } : data ? {
+            city: data.name=="Old City" ? "Sanaa" : data.name,
+            country: data.sys.country=="YE" ? "Yemen" : data.sys.country,
+            condition: data.weather[0].description,
+            icon: data.weather[0].icon,
+            humidity: data.main.humidity,
+            wind: Math.round(data.wind.speed),
+            feelsLike: Math.round(data.main.feels_like),
+            temp: Math.round(data.main.temp),
+          } : null;
 
-    fetchWeather();
-    return ()=>{
-      ignore = true;
-    };
-  }, []);
-  
-  // const content = {
-  //   ar: {
-  //     city: "صنعاء",
-  //     country: "الجمهورية اليمنية",
-  //     condition: "غائم جزئياً",
-  //     humidity: "الرطوبة",
-  //     wind: "الرياح",
-  //     feelsLike: "الشعور الحقيقي",
-  //     dateFormat: ,
-  //     temp: "28",
-  //     toggle: "English"
-  //   },
-  //   en: {
-  //     city: "Sanaa",
-  //     country: "Yemen",
-  //     condition: "Partly Cloudy",
-  //     humidity: "Humidity",
-  //     wind: "Wind",
-  //     feelsLike: "Feels Like",
-  //     dateFormat: ,
-  //     temp: "28",
-  //     toggle: "عربي"
-  //   }
-  // };
-
-  // const t = content[lang];
   const isRTL = i18n.language === 'ar';
   const dateFormating = i18n.language==='ar'? "ar-SA" : "en-US" 
   const currentDate = new Date().toLocaleDateString(dateFormating, {
@@ -117,7 +58,7 @@ const WeatherCard = () => {
           <div className="flex flex-col">
             <div className="flex items-center gap-2 text-blue-100">
               <MapPin className="w-4 h-4" />
-              <span className="text-sm font-medium tracking-wide">{isLoading ? <Skeleton className="h-4 w-20 bg-white/40" /> : weatherData.country=='YE' ? t('Yemen') : t(weatherData.country)}</span>
+              <span className="text-sm font-medium tracking-wide">{isLoading ? <Skeleton className="h-4 w-20 bg-white/40" /> : t(weatherData.country)}</span>
             </div>
             <h2 className="text-2xl font-bold mt-1">{isLoading ? <Skeleton className="h-6 w-20 bg-white/40" /> : t(weatherData.city)}</h2>
             <div className="flex items-center gap-2 mt-2 text-blue-100 text-sm">
@@ -188,16 +129,4 @@ const WeatherCard = () => {
     </div>
   );
 };
-
-export function SkeletonDemo() {
-  return (
-    <div className="flex items-center space-x-4">
-      <Skeleton className="h-12 w-12 rounded-full" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[200px]" />
-      </div>
-    </div>
-  )
-}
 export default WeatherCard;
