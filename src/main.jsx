@@ -4,14 +4,14 @@ import './index.css'
 import App from './App.jsx'
 import { store } from './store/store'
 import { Provider } from 'react-redux'
-
-// import i18n (needs to be bundled ;)) 
-import './i18n';
+import { IntlayerProvider } from "react-intlayer";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>,
+    <IntlayerProvider>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </IntlayerProvider>
   </StrictMode>,
 )

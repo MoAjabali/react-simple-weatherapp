@@ -1,27 +1,29 @@
 import { Skeleton } from "./components/ui/skeleton"
 import {Sun, Wind, Droplets, MapPin, Calendar, Globe } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useIntlayer, useLocale } from 'react-intlayer';
 import { useGetWeatherDataQuery } from './store/api/weather'
+import { Locales } from 'intlayer';
 
 
 const WeatherCard = () => {
-  const { t, i18n } = useTranslation();
+  const weatherCard = useIntlayer('weather-card');
+  const { locale, setLocale } = useLocale();
 
   const { data, error, isLoading } = useGetWeatherDataQuery();
   console.log(data);
   const weatherData = error ? {
-            city: "Unknown",
-            country: "Unknown",
-            condition: "There is Error, check your internet and try again.",
+            city: weatherCard.unknown,
+            country: weatherCard.unknown,
+            condition: weatherCard.error,
             icon: "",
             humidity: 0,
             wind: 0,
             feelsLike: 0,
             temp: 0,
           } : data ? {
-            city: data.name=="Old City" ? "Sanaa" : data.name,
-            country: data.sys.country=="YE" ? "Yemen" : data.sys.country,
-            condition: data.weather[0].description,
+            city: data.name=="Old City" ? weatherCard.sanaa : weatherCard[data.name.toLowerCase()],
+            country: data.sys.country=="YE" ? weatherCard.yemen : weatherCard[data.sys.country.toLowerCase()],
+            condition: weatherCard[data.weather[0].description] ? weatherCard[data.weather[0].description] : data.weather[0].description,
             icon: data.weather[0].icon,
             humidity: data.main.humidity,
             wind: Math.round(data.wind.speed),
@@ -29,8 +31,8 @@ const WeatherCard = () => {
             temp: Math.round(data.main.temp),
           } : null;
 
-  const isRTL = i18n.language === 'ar';
-  const dateFormating = i18n.language==='ar'? "ar-SA" : "en-US" 
+  const isRTL = locale === Locales.ARABIC;
+  const dateFormating = locale === Locales.ARABIC ? "ar-SA" : "en-US" 
   const currentDate = new Date().toLocaleDateString(dateFormating, {
     weekday: 'long',
     year: 'numeric',
@@ -58,9 +60,9 @@ const WeatherCard = () => {
           <div className="flex flex-col">
             <div className="flex items-center gap-2 text-blue-100">
               <MapPin className="w-4 h-4" />
-              <span className="text-sm font-medium tracking-wide">{isLoading ? <Skeleton className="h-4 w-20 bg-white/40" /> : t(weatherData.country)}</span>
+              <span className="text-sm font-medium tracking-wide">{isLoading ? <Skeleton className="h-4 w-20 bg-white/40" /> : weatherData.country}</span>
             </div>
-            <h2 className="text-2xl font-bold mt-1">{isLoading ? <Skeleton className="h-6 w-20 bg-white/40" /> : t(weatherData.city)}</h2>
+            <h2 className="text-2xl font-bold mt-1">{isLoading ? <Skeleton className="h-6 w-20 bg-white/40" /> : weatherData.city}</h2>
             <div className="flex items-center gap-2 mt-2 text-blue-100 text-sm">
               <Calendar className="w-3 h-3" />
               <span>{currentDate}</span>
@@ -68,11 +70,11 @@ const WeatherCard = () => {
           </div>
           
           <button 
-            onClick={() => i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar')}
+            onClick={() => setLocale(locale === Locales.ARABIC ? Locales.ENGLISH : Locales.ARABIC)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-xs font-medium backdrop-blur-sm"
           >
             <Globe className="w-3 h-3" />
-            {i18n.language === 'ar' ? 'English' : 'عربي'}
+            {locale === Locales.ARABIC ? 'English' : 'عربي'}
           </button>
         </div>
 
@@ -91,7 +93,7 @@ const WeatherCard = () => {
               { isLoading ? <Skeleton className="h-20 w-22 bg-white/25" /> : weatherData.temp + "°" }
             </h1>
             <p className="text-xl font-medium text-blue-100 mt-2">
-              { isLoading ? <Skeleton className="h-8 w-48 bg-white/25" /> : t(weatherData.condition) }
+              { isLoading ? <Skeleton className="h-8 w-48 bg-white/25" /> : weatherData.condition }
             </p>
           </div>
         </div>
@@ -101,15 +103,15 @@ const WeatherCard = () => {
           <div className="grid grid-cols-3 gap-4">
             <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
               <Wind className="w-5 h-5 mb-2 text-blue-100" />
-              <span className="text-xs text-blue-200">{t('Wind')}</span>
+              <span className="text-xs text-blue-200">{weatherCard.wind}</span>
               <span className="font-semibold text-sm mt-1">
-                { isLoading ? <Skeleton className="h-4 w-12 bg-white/40" /> : weatherData.wind + " "+ t("km/hr")}
+                { isLoading ? <Skeleton className="h-4 w-12 bg-white/40" /> : `${weatherData.wind} ${weatherCard.kmHr.value}` }
               </span>
             </div>
             
             <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
               <Droplets className="w-5 h-5 mb-2 text-blue-100" />
-              <span className="text-xs text-blue-200">{t('Humidity')}</span>
+              <span className="text-xs text-blue-200">{weatherCard.humidity}</span>
               <span className="font-semibold text-sm mt-1">
                 { isLoading ? <Skeleton className="h-4 w-12 bg-white/40" />: weatherData.humidity + "%"}
                 
@@ -118,7 +120,7 @@ const WeatherCard = () => {
 
             <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
               <Sun className="w-5 h-5 mb-2 text-blue-100" />
-              <span className="text-xs text-blue-200">{t('Feels Like')}</span>
+              <span className="text-xs text-blue-200">{weatherCard.feelsLike}</span>
               <span className="font-semibold text-sm mt-1">
                 { isLoading ? <Skeleton className="h-4 w-12 bg-white/40" /> : weatherData.feelsLike + "°"}
               </span>
